@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
@@ -10,7 +9,6 @@ export default function LoginPage() {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   async function handleLogin(e: React.FormEvent) {
@@ -19,7 +17,9 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      console.log('1. Tentando login...')
       const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
+      console.log('2. Resposta auth:', { erro: error?.message, userId: data?.user?.id })
 
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
@@ -30,16 +30,21 @@ export default function LoginPage() {
         return
       }
 
-      // Força o refresh da sessão no servidor antes de navegar
-      const { data: profile } = await supabase
+      console.log('3. Login OK, buscando perfil...')
+      const { data: profile, error: profileError } = await supabase
         .from('users').select('role').eq('id', data.user.id).single()
+      console.log('4. Perfil:', { role: profile?.role, erro: profileError?.message, code: profileError?.code })
 
-      // window.location garante que a sessão é lida do zero pelo servidor
       if (profile?.role === 'responsavel') {
+        console.log('5. Indo para responsavel...')
         window.location.href = '/responsavel/dashboard'
       } else {
+        console.log('5. Indo para aluno...')
         window.location.href = '/aluno/painel'
       }
+    } catch (err: any) {
+      console.error('ERRO INESPERADO:', err)
+      setErro('Erro inesperado: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -64,6 +69,7 @@ export default function LoginPage() {
                 className="input-base"
                 type="email"
                 name="email"
+                autoComplete="email"
                 placeholder="seu@email.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -76,6 +82,7 @@ export default function LoginPage() {
                 className="input-base"
                 type="password"
                 name="senha"
+                autoComplete="current-password"
                 placeholder="••••••••"
                 value={senha}
                 onChange={e => setSenha(e.target.value)}
