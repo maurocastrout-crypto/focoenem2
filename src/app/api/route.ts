@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
-  const { messages } = await req.json()
+  const { tema, texto } = await req.json()
 
-  const system = `Você é o Tutor IA do FocoENEM, especialista em todas as matérias do ENEM. 
-Responda sempre em português brasileiro de forma clara, didática e motivadora.
-Use exemplos práticos. Seja conciso mas completo. Quando relevante, mencione como o tema cai no ENEM.
-Matérias: Matemática, Língua Portuguesa, Literatura, Redação, Biologia, Química, Física, História, Geografia, Filosofia, Sociologia, Inglês.`
+  const prompt = `Você é um corretor especialista em redações do ENEM. Corrija a seguinte redação e retorne APENAS um JSON válido, sem markdown, sem texto adicional.
 
-  const contents = messages.map((m: any) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }]
-  }))
+Tema: ${tema}
+
+Redação:
+${texto}
+
+Retorne exatamente neste formato JSON:
+{
+  "nota_total": <número de 0 a 1000>,
+  "competencias": [
+    {"nome": "Competência 1 — Domínio da norma culta", "nota": <0-200>, "feedback": "<feedback específico>"},
+    {"nome": "Competência 2 — Compreensão do tema", "nota": <0-200>, "feedback": "<feedback específico>"},
+    {"nome": "Competência 3 — Seleção de argumentos", "nota": <0-200>, "feedback": "<feedback específico>"},
+    {"nome": "Competência 4 — Coesão e coerência", "nota": <0-200>, "feedback": "<feedback específico>"},
+    {"nome": "Competência 5 — Proposta de intervenção", "nota": <0-200>, "feedback": "<feedback específico>"}
+  ],
+  "feedback_geral": "<parágrafo com análise geral e principais pontos de melhoria>"
+}`
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -19,14 +29,19 @@ Matérias: Matemática, Língua Portuguesa, Literatura, Redação, Biologia, Qu�
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: system }] },
-        contents,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json' },
       }),
     }
   )
 
   const data = await res.json()
-  const resposta = data.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Erro ao processar resposta.'
+  const texto_resposta = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
-  return NextResponse.json({ resposta })
+  try {
+    const resultado = JSON.parse(texto_resposta.replace(/```json|```/g, '').trim())
+    return NextResponse.json(resultado)
+  } catch {
+    return NextResponse.json({ erro: 'Erro ao processar correção. Tente novamente.' })
+  }
 }
