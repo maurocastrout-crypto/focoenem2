@@ -17,9 +17,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      console.log('1. Tentando login...')
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
-      console.log('2. Resposta auth:', { erro: error?.message, userId: data?.user?.id })
+      const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
 
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
@@ -30,20 +28,10 @@ export default function LoginPage() {
         return
       }
 
-      console.log('3. Login OK, buscando perfil...')
-      const { data: profile, error: profileError } = await supabase
-        .from('users').select('role').eq('id', data.user.id).single()
-      console.log('4. Perfil:', { role: profile?.role, erro: profileError?.message, code: profileError?.code })
-
-      if (profile?.role === 'responsavel') {
-        console.log('5. Indo para responsavel...')
-        window.location.href = '/responsavel/dashboard'
-      } else {
-        console.log('5. Indo para aluno...')
-        window.location.href = '/aluno/painel'
-      }
+      // Redireciona para a rota de callback no servidor
+      // que já tem acesso à sessão e decide para onde ir
+      window.location.href = '/auth/callback'
     } catch (err: any) {
-      console.error('ERRO INESPERADO:', err)
       setErro('Erro inesperado: ' + err.message)
     } finally {
       setLoading(false)
