@@ -31,15 +31,14 @@ export default function LoginPage() {
       }
 
       // Força o refresh da sessão no servidor antes de navegar
-      router.refresh()
-
       const { data: profile } = await supabase
         .from('users').select('role').eq('id', data.user.id).single()
 
+      // window.location garante que a sessão é lida do zero pelo servidor
       if (profile?.role === 'responsavel') {
-        router.push('/responsavel/dashboard')
+        window.location.href = '/responsavel/dashboard'
       } else {
-        router.push('/aluno/painel')
+        window.location.href = '/aluno/painel'
       }
     } finally {
       setLoading(false)
