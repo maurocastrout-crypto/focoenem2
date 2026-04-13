@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #00e5a0;
+  --accent2: #7F77DD;
+  --danger: #ff4d6d;
+  --warn: #f59e0b;
+  --purple: #7F77DD;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: #0a0f1e;
+  color: #f1f5f9;
+  font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    @apply bg-surface2 border border-white/8 rounded-2xl p-5;
+  }
+  .btn-primary {
+    @apply bg-accent text-surface font-semibold rounded-xl px-5 py-3 hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-white/5 border border-white/10 text-white font-medium rounded-xl px-5 py-3 hover:bg-white/10 transition-all;
+  }
+  .input-base {
+    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20 transition-all;
+  }
+  .text-muted { @apply text-gray-400; }
+  .badge-accent { @apply bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full; }
+  .badge-danger { @apply bg-danger/10 text-danger text-xs font-semibold px-2 py-0.5 rounded-full; }
+  .badge-warn { @apply bg-warn/10 text-warn text-xs font-semibold px-2 py-0.5 rounded-full; }
+  .badge-purple { @apply bg-accent2/10 text-accent2 text-xs font-semibold px-2 py-0.5 rounded-full; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 0.4s ease both; }
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.animate-pulse-dot { animation: pulseDot 1.5s ease-in-out infinite; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ffffff20; border-radius: 4px; }
