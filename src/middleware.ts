@@ -31,17 +31,27 @@ export async function middleware(request: NextRequest) {
 
   if (isApi) return supabaseResponse
 
+  // Se não tem usuário e tenta acessar área protegida → login
   if (!user && (isAluno || isResponsavel)) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
+  // Se tem usuário e tenta acessar /auth → redireciona para painel
+  // Mas NÃO redireciona se vier de um redirect do próprio login
   if (user && isAuth) {
-    const { data: profile } = await supabase
-      .from('users').select('role').eq('id', user.id).single()
-    if (profile?.role === 'responsavel') {
-      return NextResponse.redirect(new URL('/responsavel/dashboard', request.url))
+    const referer = request.headers.get('referer') || ''
+    const comingFromLogin = referer.includes('/auth/login') || referer.includes('/auth/cadastro')
+    
+    // Se veio do login, deixa o window.location.href do cliente resolver
+    // Se tentou acessar /auth diretamente já logado, redireciona
+    if (!comingFromLogin) {
+      const { data: profile } = await supabase
+        .from('users').select('role').eq('id', user.id).single()
+      if (profile?.role === 'responsavel') {
+        return NextResponse.redirect(new URL('/responsavel/dashboard', request.url))
+      }
+      return NextResponse.redirect(new URL('/aluno/painel', request.url))
     }
-    return NextResponse.redirect(new URL('/aluno/painel', request.url))
   }
 
   return supabaseResponse
