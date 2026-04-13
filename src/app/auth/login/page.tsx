@@ -18,21 +18,31 @@ export default function LoginPage() {
     setErro('')
     setLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
 
-    if (error) {
-      setErro('E-mail ou senha incorretos.')
+      if (error) {
+        if (error.message.toLowerCase().includes('email not confirmed')) {
+          setErro('E-mail ainda não confirmado. Verifique sua caixa de entrada.')
+        } else {
+          setErro('E-mail ou senha incorretos.')
+        }
+        return
+      }
+
+      // Força o refresh da sessão no servidor antes de navegar
+      router.refresh()
+
+      const { data: profile } = await supabase
+        .from('users').select('role').eq('id', data.user.id).single()
+
+      if (profile?.role === 'responsavel') {
+        router.push('/responsavel/dashboard')
+      } else {
+        router.push('/aluno/painel')
+      }
+    } finally {
       setLoading(false)
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('users').select('role').eq('id', data.user.id).single()
-
-    if (profile?.role === 'responsavel') {
-      router.push('/responsavel/dashboard')
-    } else {
-      router.push('/aluno/painel')
     }
   }
 
