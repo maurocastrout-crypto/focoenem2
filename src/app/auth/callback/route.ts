@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const BASE_URL = 'https://focoenem2.onrender.com'
+
 export async function GET(request: NextRequest) {
   const cookieStore = cookies()
   const supabase = createServerClient(
@@ -26,10 +28,10 @@ export async function GET(request: NextRequest) {
       .from('users').select('role').eq('id', user.id).single()
 
     if (profile?.role === 'responsavel') {
-      return NextResponse.redirect(new URL('/responsavel/dashboard', request.url))
+      return NextResponse.redirect(`${BASE_URL}/responsavel/dashboard`)
     }
-    return NextResponse.redirect(new URL('/aluno/painel', request.url))
+    return NextResponse.redirect(`${BASE_URL}/aluno/painel`)
   }
 
-  return NextResponse.redirect(new URL('/auth/login', request.url))
+  return NextResponse.redirect(`${BASE_URL}/auth/login`)
 }
