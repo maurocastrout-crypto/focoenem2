@@ -25,7 +25,7 @@ export default function CadastroPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
-      options: { emailRedirectTo: `https://focoenem2.onrender.com/auth/login` }
+     options: { emailRedirectTo: `https://focoenem2.onrender.com/auth/callback` }
     })
 
     if (error) {
