@@ -28,9 +28,9 @@ export default function LoginPage() {
         return
       }
 
-      // Redireciona para a rota de callback no servidor
-      // que já tem acesso à sessão e decide para onde ir
-      window.location.href = '/auth/callback'
+      // Agora, com o AuthProvider cuidando da sessão,
+      // podemos redirecionar direto para o painel
+      window.location.href = '/aluno/painel'
     } catch (err: any) {
       setErro('Erro inesperado: ' + err.message)
     } finally {
